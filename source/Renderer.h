@@ -11,11 +11,11 @@ struct SDL_Surface;
 
 namespace dae
 {
-	class Texture;
 	struct Mesh;
 	struct Vertex;
 	class Timer;
 	class Scene;
+	class Texture;
 
 	class Renderer final
 	{
@@ -46,8 +46,13 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
-
+		float m_AspectRatio{};
+		//TODO: start here: convert these containers to vertex containers
+		std::vector<Vertex> m_Vertices_world{};
+		std::vector<Vector3> m_Vertices_viewspace{};
+		std::vector<Vector3> m_Vertices_ssc{};
 		//Function that transforms the vertices from the mesh from World space to Screen space
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const; //W1 Version
+		void VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vector3>& vertices_out) const; //W1 Version
+		bool IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices) const;
 	};
 }
