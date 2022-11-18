@@ -53,6 +53,6 @@ namespace dae
 		std::vector<Vector3> m_Vertices_ssc{};
 		//Function that transforms the vertices from the mesh from World space to Screen space
 		void VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vector3>& vertices_out) const; //W1 Version
-		bool IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices) const;
+		bool IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices, ColorRGB& weights) const;
 	};
 }

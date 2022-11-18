@@ -75,13 +75,14 @@ void Renderer::Render()
 
 			const Vector2 pixel_ssc{ float(px) + 0.5f , float(py) + 0.5f };
 			ColorRGB finalColor{};
+			ColorRGB weights{};
 
 			// Is pixel in triangle?
-			if (IsPixelInTriangle(pixel_ssc, m_Vertices_ssc))
+			if (IsPixelInTriangle(pixel_ssc, m_Vertices_ssc,weights))
 			{
-				finalColor.r = 1;
-				finalColor.g = 1;
-				finalColor.b = 1;
+				finalColor.r = weights.r;
+				finalColor.g = weights.g;
+				finalColor.b = weights.b;
 			}
 
 
@@ -117,7 +118,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Vector3>& vertices
 }
 
 
-bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices) const
+bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices, ColorRGB& weights) const
 {
 	Vector2 edge{	triangleVertices[1].x - triangleVertices[0].x,
 					triangleVertices[1].y - triangleVertices[0].y };
@@ -125,7 +126,10 @@ bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triang
 	Vector2 pointToSide{	pixel_ssc.x - triangleVertices[0].x ,
 							pixel_ssc.y - triangleVertices[0].y };
 
-	if (Vector2::Cross(edge, pointToSide) < 0.f)
+	const float TotalAreaParallelogram{ Vector2::Cross(edge, Vector2{triangleVertices[2].x - triangleVertices[0].x,triangleVertices[2].y - triangleVertices[0].y}) };
+
+	weights.r = Vector2::Cross(edge, pointToSide);
+	if (weights.r < 0.f)
 		return false;
 
 	edge.x = triangleVertices[2].x - triangleVertices[1].x;
@@ -134,7 +138,8 @@ bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triang
 	pointToSide.x = pixel_ssc.x - triangleVertices[1].x;
 	pointToSide.y = pixel_ssc.y - triangleVertices[1].y;
 
-	if (Vector2::Cross(edge, pointToSide) < 0.f)
+	weights.g = Vector2::Cross(edge, pointToSide);
+	if (weights.g < 0.f)
 		return false;
 
 	edge.x = triangleVertices[0].x - triangleVertices[2].x;
@@ -143,8 +148,13 @@ bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triang
 	pointToSide.x = pixel_ssc.x - triangleVertices[2].x;
 	pointToSide.y = pixel_ssc.y - triangleVertices[2].y;
 
-	if (Vector2::Cross(edge, pointToSide) < 0.f)
+	weights.b = Vector2::Cross(edge, pointToSide);
+	if (weights.b < 0.f)
 		return false;
+
+	weights.r /= TotalAreaParallelogram;
+	weights.g /= TotalAreaParallelogram;
+	weights.b /= TotalAreaParallelogram;
 
 	return true;
 }
