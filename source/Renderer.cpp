@@ -104,49 +104,50 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vector3>& vertices_out) const
+void Renderer::VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vertex>& vertices_out) const
 {
 	vertices_out.clear();
-	Vector3 screenSpaceVertex{0,0,1};
+	Vertex screenSpaceVertex{0,0,1};
 
 	for (const auto& vertex : vertices_in)
 	{
-		screenSpaceVertex.x = ((1 + vertex.x) / 2) * m_Width;
-		screenSpaceVertex.y = ((1 - vertex.y) / 2) * m_Height;
+		screenSpaceVertex.position.x = ((1 + vertex.x) / 2) * m_Width;
+		screenSpaceVertex.position.y = ((1 - vertex.y) / 2) * m_Height;
 		vertices_out.emplace_back(screenSpaceVertex);
 	}
 }
 
 
-bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vector3>& triangleVertices, ColorRGB& weights) const
+bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vertex>& triangleVertices, ColorRGB& weights) const
 {
-	Vector2 edge{	triangleVertices[1].x - triangleVertices[0].x,
-					triangleVertices[1].y - triangleVertices[0].y };
+	Vector2 edge{	triangleVertices[1].position.x - triangleVertices[0].position.x,
+					triangleVertices[1].position.y - triangleVertices[0].position.y };
 
-	Vector2 pointToSide{	pixel_ssc.x - triangleVertices[0].x ,
-							pixel_ssc.y - triangleVertices[0].y };
+	Vector2 pointToSide{	pixel_ssc.x - triangleVertices[0].position.x ,
+							pixel_ssc.y - triangleVertices[0].position.y };
 
-	const float TotalAreaParallelogram{ Vector2::Cross(edge, Vector2{triangleVertices[2].x - triangleVertices[0].x,triangleVertices[2].y - triangleVertices[0].y}) };
+	const float TotalAreaParallelogram{ Vector2::Cross(edge, Vector2{triangleVertices[2].position.x - triangleVertices[0].position.x,
+																	 triangleVertices[2].position.y - triangleVertices[0].position.y}) };
 
 	weights.r = Vector2::Cross(edge, pointToSide);
 	if (weights.r < 0.f)
 		return false;
 
-	edge.x = triangleVertices[2].x - triangleVertices[1].x;
-	edge.y = triangleVertices[2].y - triangleVertices[1].y;
+	edge.x = triangleVertices[2].position.x - triangleVertices[1].position.x;
+	edge.y = triangleVertices[2].position.y - triangleVertices[1].position.y;
 
-	pointToSide.x = pixel_ssc.x - triangleVertices[1].x;
-	pointToSide.y = pixel_ssc.y - triangleVertices[1].y;
+	pointToSide.x = pixel_ssc.x - triangleVertices[1].position.x;
+	pointToSide.y = pixel_ssc.y - triangleVertices[1].position.y;
 
 	weights.g = Vector2::Cross(edge, pointToSide);
 	if (weights.g < 0.f)
 		return false;
 
-	edge.x = triangleVertices[0].x - triangleVertices[2].x;
-	edge.y = triangleVertices[0].y - triangleVertices[2].y;
+	edge.x = triangleVertices[0].position.x - triangleVertices[2].position.x;
+	edge.y = triangleVertices[0].position.y - triangleVertices[2].position.y;
 
-	pointToSide.x = pixel_ssc.x - triangleVertices[2].x;
-	pointToSide.y = pixel_ssc.y - triangleVertices[2].y;
+	pointToSide.x = pixel_ssc.x - triangleVertices[2].position.x;
+	pointToSide.y = pixel_ssc.y - triangleVertices[2].position.y;
 
 	weights.b = Vector2::Cross(edge, pointToSide);
 	if (weights.b < 0.f)
