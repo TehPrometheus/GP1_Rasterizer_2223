@@ -7,12 +7,7 @@ namespace dae
 	struct Vertex
 	{
 		Vector3 position{};
-		Vertex()
-		{
-			position.x = 0.f;
-			position.y = 0.f;
-			position.z = 0.f;
-		}
+		Vertex();
 		Vertex(float x, float y, float z)
 		{
 			position.x = x;

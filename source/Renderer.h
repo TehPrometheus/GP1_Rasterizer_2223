@@ -47,7 +47,6 @@ namespace dae
 		int m_Width{};
 		int m_Height{};
 		float m_AspectRatio{};
-		//TODO: start here: convert these containers to vertex containers
 		//Function that transforms the vertices from the mesh from World space to Screen space
 		void VertexTransformationFunction(std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out); //W1 Version
 		bool IsPointInTriangle(const std::vector<Vertex>& triangle, const Vector3& point, const Vector3& weights) const;

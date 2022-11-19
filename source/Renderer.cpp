@@ -63,13 +63,13 @@ void Renderer::Solution_W1()
 	std::vector<Vertex> vertices_world
 	{
 		//triangle1
-		{{0.0f, 2.0f, 0.0f}, {1, 0, 0}},
-		{{1.5f, -1.0f, 0.0f}, {1, 0, 0}},
+		{{0.0f, 2.0f, 0.0f},   {1, 0, 0}},
+		{{1.5f, -1.0f, 0.0f},  {1, 0, 0}},
 		{{-1.5f, -1.0f, 0.0f}, {1, 0, 0}},
 
 		////triangle 2
-		{{0.0f, 4.0f, 2.0f}, {1, 0, 0}},
-		{{3.0f, -2.0f, 2.0f}, {0, 1, 0}},
+		{{0.0f, 4.0f, 2.0f},   {1, 0, 0}},
+		{{3.0f, -2.0f, 2.0f},  {0, 1, 0}},
 		{{-3.0f, -2.0f, 2.0f}, {0, 0, 1}}
 	};
 
@@ -173,6 +173,34 @@ void Renderer::VertexTransformationFunction(std::vector<Vertex>& vertices_in, st
 
 void Renderer::Solution_W2()
 {
+	std::vector<Mesh> mesh_world
+	{
+		Mesh{
+				{
+					Vertex(-3, 3,-2),
+					Vertex( 0, 3,-2),
+					Vertex( 3, 3,-2),
+					Vertex(-3, 0,-2),
+					Vertex( 0, 0,-2),
+					Vertex( 3, 0,-2),
+					Vertex(-3,-3,-2),
+					Vertex( 0,-3,-2),
+					Vertex(-3,-3,-2)
+				}
+				,
+				{
+					3,0,4,
+					1,5,2,
+					2,6,6,
+					3,7,4,
+					8,5
+				}
+				,
+				PrimitiveTopology::TriangleStrip
+			}
+
+
+	};
 }
 
 bool Renderer::SaveBufferToImage() const
