@@ -45,6 +45,12 @@ namespace dae
 
 		void CalculateViewMatrix()
 		{
+			Matrix rotationMatrix = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
+
+			forward = rotationMatrix.GetAxisZ();
+			right = rotationMatrix.GetAxisX();
+			up = rotationMatrix.GetAxisY();
+
 			Matrix ONB
 			{
 				Vector4{ right, 0.f},

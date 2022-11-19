@@ -17,20 +17,13 @@ Renderer::Renderer(SDL_Window* pWindow)
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
 	m_AspectRatio = (float)m_Width / (float)m_Height;
-	//m_Vertices_ndc.push_back( Vertex(   0.f,  0.5f, 1.f ) );
-	//m_Vertices_ndc.push_back( Vertex(  0.5f, -0.5f, 1.f ) );
-	//m_Vertices_ndc.push_back( Vertex( -0.5f, -0.5f, 1.f ) );
-
-	m_Vertices_world.push_back({ 0.f, 2.f, 0.f });
-	m_Vertices_world.push_back({ 1.f, 0.f, 0.f });
-	m_Vertices_world.push_back({-1.f, 0.f, 0.f });
 
 	//Create Buffers
 	m_pFrontBuffer = SDL_GetWindowSurface(pWindow);
 	m_pBackBuffer = SDL_CreateRGBSurface(0, m_Width, m_Height, 32, 0, 0, 0, 0);
 	m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
 
-	//m_pDepthBufferPixels = new float[m_Width * m_Height];
+	m_pDepthBufferPixels = new float[m_Width * m_Height];
 
 	//Initialize Camera
 	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
@@ -38,7 +31,7 @@ Renderer::Renderer(SDL_Window* pWindow)
 
 Renderer::~Renderer()
 {
-	//delete[] m_pDepthBufferPixels;
+	delete[] m_pDepthBufferPixels;
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -49,54 +42,15 @@ void Renderer::Update(Timer* pTimer)
 void Renderer::Render()
 {
 	//@START
+	std::fill_n(m_pDepthBufferPixels, m_Width * m_Height, FLT_MAX);
+	SDL_FillRect(m_pBackBuffer, NULL, SDL_MapRGB(m_pBackBuffer->format, 100, 100, 100));
+
 	//Lock BackBuffer
 	SDL_LockSurface(m_pBackBuffer);
 
-	//RENDER LOGIC
-	for (int px{}; px < m_Width; ++px)
-	{
-		for (int py{}; py < m_Height; ++py)
-		{
-			// World Space Coordinates --> View Space
-			m_Vertices_viewspace.clear();
-			for (const auto& vertex : m_Vertices_world)
-			{
-				m_Vertices_viewspace.push_back(m_Camera.invViewMatrix.TransformPoint(vertex.position));
-			}
-			// perspective divide
-			for (auto& vertex : m_Vertices_viewspace)
-			{
-				vertex.x = vertex.x / (vertex.z * m_Camera.fov * m_AspectRatio);
-				vertex.y = vertex.y / (vertex.z * m_Camera.fov);
-			}
-
-			// Normalized Device Coordinates --> Screen Space Coordinates
-			VertexTransformationFunction(m_Vertices_viewspace, m_Vertices_ssc);
-
-			const Vector2 pixel_ssc{ float(px) + 0.5f , float(py) + 0.5f };
-			ColorRGB finalColor{};
-			ColorRGB weights{};
-
-			// Is pixel in triangle?
-			if (IsPixelInTriangle(pixel_ssc, m_Vertices_ssc,weights))
-			{
-				finalColor.r = weights.r;
-				finalColor.g = weights.g;
-				finalColor.b = weights.b;
-			}
-
-
-
-			//Update Color in Buffer
-			finalColor.MaxToOne();
-
-			m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
-				static_cast<uint8_t>(finalColor.r * 255),
-				static_cast<uint8_t>(finalColor.g * 255),
-				static_cast<uint8_t>(finalColor.b * 255));
-		}
-	}
-
+	//Solutions
+	Solution_W1();
+	
 	//@END
 	//Update SDL Surface
 	SDL_UnlockSurface(m_pBackBuffer);
@@ -104,60 +58,121 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vertex>& vertices_out) const
+void Renderer::Solution_W1()
 {
-	vertices_out.clear();
-	Vertex screenSpaceVertex{0,0,1};
-
-	for (const auto& vertex : vertices_in)
+	std::vector<Vertex> vertices_world
 	{
-		screenSpaceVertex.position.x = ((1 + vertex.x) / 2) * m_Width;
-		screenSpaceVertex.position.y = ((1 - vertex.y) / 2) * m_Height;
-		vertices_out.emplace_back(screenSpaceVertex);
+		//triangle1
+		{{0.0f, 2.0f, 0.0f}, {1, 0, 0}},
+		{{1.5f, -1.0f, 0.0f}, {1, 0, 0}},
+		{{-1.5f, -1.0f, 0.0f}, {1, 0, 0}},
+
+		////triangle 2
+		{{0.0f, 4.0f, 2.0f}, {1, 0, 0}},
+		{{3.0f, -2.0f, 2.0f}, {0, 1, 0}},
+		{{-3.0f, -2.0f, 2.0f}, {0, 0, 1}}
+	};
+
+	std::vector<Vertex> vertices_screenspace{};
+
+	// World Space Coordinates --> Screen Space Coordinates
+	VertexTransformationFunction(vertices_world, vertices_screenspace);
+
+	for (size_t i = 0; i < vertices_screenspace.size(); i += 3)
+	{
+		std::vector<Vertex> triangle
+		{
+			vertices_screenspace[i + 0],
+			vertices_screenspace[i + 1],
+			vertices_screenspace[i + 2]
+		};
+
+		const Vector2 v0{ triangle[0].position.x, triangle[0].position.y };
+		const Vector2 v1{ triangle[1].position.x, triangle[1].position.y };
+		const Vector2 v2{ triangle[2].position.x, triangle[2].position.y };
+
+		Vector2 topLeft{  std::min(std::min(triangle[0].position.x,triangle[1].position.x), triangle[2].position.x),
+								std::min(std::min(triangle[0].position.y,triangle[1].position.y), triangle[2].position.y) };
+		Vector2 bottomRight{  std::max(std::max(triangle[0].position.x,triangle[1].position.x), triangle[2].position.x),
+									std::max(std::max(triangle[0].position.y,triangle[1].position.y), triangle[2].position.y) };
+		
+		topLeft.x = Clamp(topLeft.x, 0.f, float(m_Width - 1));
+		topLeft.y = Clamp(topLeft.y, 0.f, float(m_Height - 1));
+		bottomRight.x = Clamp(bottomRight.x, 0.f, float(m_Width - 1));
+		bottomRight.y = Clamp(bottomRight.y, 0.f, float(m_Height - 1));
+
+		for (int px{int(topLeft.x)}; px < int(bottomRight.x); ++px)
+		{
+			for (int py{int(topLeft.y)}; py < int(bottomRight.y); ++py)
+			{
+				Vector3 weights{};
+				ColorRGB finalColor{};
+				const Vector2 pixel_ssc{ float(px) + 0.5f , float(py) + 0.5f };
+
+				weights.x = Vector2::Cross(Vector2(v1, v2), Vector2(v1, pixel_ssc));
+				weights.y = Vector2::Cross(Vector2(v2, v0), Vector2(v2, pixel_ssc));
+				weights.z = Vector2::Cross(Vector2(v0, v1), Vector2(v0, pixel_ssc));
+
+				const Vector3 point = triangle[0].position * weights.x + triangle[1].position * weights.y + triangle[2].position * weights.z;
+
+				if (IsPointInTriangle(triangle,point,weights))
+				{
+					if (point.z <  m_pDepthBufferPixels[py * m_Width + px])
+					{
+						m_pDepthBufferPixels[py * m_Width + px] = point.z;
+						finalColor = triangle[0].color * weights.x + triangle[1].color * weights.y + triangle[2].color * weights.z;
+
+						finalColor.MaxToOne();
+
+						m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
+							static_cast<uint8_t>(finalColor.r * 255),
+							static_cast<uint8_t>(finalColor.g * 255),
+							static_cast<uint8_t>(finalColor.b * 255));
+					}
+				}
+			}
+		}
 	}
 }
 
-
-bool Renderer::IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vertex>& triangleVertices, ColorRGB& weights) const
+bool Renderer::IsPointInTriangle(const std::vector<Vertex>& triangle, const Vector3& point, const Vector3& weights) const
 {
-	Vector2 edge{	triangleVertices[1].position.x - triangleVertices[0].position.x,
-					triangleVertices[1].position.y - triangleVertices[0].position.y };
+	// All are negative
+	if ((weights.x < 0) && (weights.y < 0) && (weights.z < 0))
+	{
+		return true;
+	}
 
-	Vector2 pointToSide{	pixel_ssc.x - triangleVertices[0].position.x ,
-							pixel_ssc.y - triangleVertices[0].position.y };
+	// All are positive
+	if ((weights.x > 0) && (weights.y > 0) && (weights.z > 0))
+	{
+		return true;
+	}
 
-	const float TotalAreaParallelogram{ Vector2::Cross(edge, Vector2{triangleVertices[2].position.x - triangleVertices[0].position.x,
-																	 triangleVertices[2].position.y - triangleVertices[0].position.y}) };
+	return false;
+}
 
-	weights.r = Vector2::Cross(edge, pointToSide);
-	if (weights.r < 0.f)
-		return false;
+void Renderer::VertexTransformationFunction(std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out)
+{
+	for (auto& vertex : vertices_in)
+	{
+		// World Space -> View Space
+		vertex.position = m_Camera.invViewMatrix.TransformPoint(vertex.position);
 
-	edge.x = triangleVertices[2].position.x - triangleVertices[1].position.x;
-	edge.y = triangleVertices[2].position.y - triangleVertices[1].position.y;
+		// View Space -> NDC
+		vertex.position.x = vertex.position.x / (vertex.position.z * m_Camera.fov * m_AspectRatio);
+		vertex.position.y = vertex.position.y / (vertex.position.z * m_Camera.fov);
 
-	pointToSide.x = pixel_ssc.x - triangleVertices[1].position.x;
-	pointToSide.y = pixel_ssc.y - triangleVertices[1].position.y;
+		// NDC -> Screen Space
+		vertex.position.x = ((1 + vertex.position.x) / 2) * m_Width;
+		vertex.position.y = ((1 - vertex.position.y) / 2) * m_Height;
 
-	weights.g = Vector2::Cross(edge, pointToSide);
-	if (weights.g < 0.f)
-		return false;
+		vertices_out.push_back(vertex);
+	}
+}
 
-	edge.x = triangleVertices[0].position.x - triangleVertices[2].position.x;
-	edge.y = triangleVertices[0].position.y - triangleVertices[2].position.y;
-
-	pointToSide.x = pixel_ssc.x - triangleVertices[2].position.x;
-	pointToSide.y = pixel_ssc.y - triangleVertices[2].position.y;
-
-	weights.b = Vector2::Cross(edge, pointToSide);
-	if (weights.b < 0.f)
-		return false;
-
-	weights.r /= TotalAreaParallelogram;
-	weights.g /= TotalAreaParallelogram;
-	weights.b /= TotalAreaParallelogram;
-
-	return true;
+void Renderer::Solution_W2()
+{
 }
 
 bool Renderer::SaveBufferToImage() const

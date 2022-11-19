@@ -40,7 +40,7 @@ namespace dae
 		SDL_Surface* m_pBackBuffer{ nullptr };
 		uint32_t* m_pBackBufferPixels{};
 
-		//float* m_pDepthBufferPixels{};
+		float* m_pDepthBufferPixels{};
 
 		Camera m_Camera{};
 
@@ -48,11 +48,11 @@ namespace dae
 		int m_Height{};
 		float m_AspectRatio{};
 		//TODO: start here: convert these containers to vertex containers
-		std::vector<Vertex> m_Vertices_world{};
-		std::vector<Vector3> m_Vertices_viewspace{};
-		std::vector<Vertex> m_Vertices_ssc{};
 		//Function that transforms the vertices from the mesh from World space to Screen space
-		void VertexTransformationFunction(const std::vector<Vector3>& vertices_in, std::vector<Vertex>& vertices_out) const; //W1 Version
-		bool IsPixelInTriangle(Vector2 pixel_ssc, std::vector<Vertex>& triangleVertices, ColorRGB& weights) const;
+		void VertexTransformationFunction(std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out); //W1 Version
+		bool IsPointInTriangle(const std::vector<Vertex>& triangle, const Vector3& point, const Vector3& weights) const;
+		void Solution_W1();
+		void Solution_W2();
 	};
+
 }

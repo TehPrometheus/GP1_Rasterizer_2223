@@ -19,6 +19,11 @@ namespace dae
 			position.y = y;
 			position.z = z;
 		}
+		Vertex(Vector3 posInput, ColorRGB colorInput)
+		{
+			position = posInput;
+			color = colorInput;
+		}
 		ColorRGB color{colors::White};
 		//Made this operator, not sure if I want to use it...
 		//Vertex operator-(const Vertex& other)
