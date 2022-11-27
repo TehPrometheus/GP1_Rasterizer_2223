@@ -19,7 +19,7 @@ namespace dae
 		}
 
 		const float movementSpeed{ 20.f };
-		const float rotationSpeed{ 100.f };
+		const float rotationSpeed{ 150.f };
 
 		Vector3 origin{};
 		float fovAngle{90.f};

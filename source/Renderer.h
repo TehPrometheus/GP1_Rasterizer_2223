@@ -1,4 +1,3 @@
-#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -47,11 +46,16 @@ namespace dae
 		int m_Width{};
 		int m_Height{};
 		float m_AspectRatio{};
+		Texture* m_pTexture{};
+
 		//Function that transforms the vertices from the mesh from World space to Screen space
 		void VertexTransformationFunction(std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out); //W1 Version
-		bool IsPointInTriangle(const std::vector<Vertex>& triangle, const Vector3& point, const Vector3& weights) const;
+		bool IsPointInTriangle(const Vector3& weights) const;
 		void Solution_W1();
 		void Solution_W2();
+		float CalculateWeights(const Vector2& vertex1, const Vector2& vertex2, const Vector2& pixel, float area) const;
+		void RenderTriangle(const std::vector<Vertex>& triangleScreenSpace) const;
+		void SwapLastTwoIndicesOfUnevenTriangles(std::vector<uint32_t>& indices) const;
 	};
 
 }

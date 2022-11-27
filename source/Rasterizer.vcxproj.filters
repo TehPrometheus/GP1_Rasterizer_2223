@@ -70,4 +70,7 @@
       <Filter>Misc</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\uv_grid_2.png" />
+  </ItemGroup>
 </Project>

@@ -7,12 +7,13 @@ namespace dae
 	struct Vertex
 	{
 		Vector3 position{};
-		Vertex();
-		Vertex(float x, float y, float z)
+		Vertex() {};
+		Vertex(float x, float y, float z, Vector2 uvInput)
 		{
 			position.x = x;
 			position.y = y;
 			position.z = z;
+			uv = uvInput;
 		}
 		Vertex(Vector3 posInput, ColorRGB colorInput)
 		{
@@ -20,6 +21,11 @@ namespace dae
 			color = colorInput;
 		}
 		ColorRGB color{colors::White};
+		Vector2 uv{}; //W3
+		//Vector3 normal{}; //W4
+		//Vector3 tangent{}; //W4
+		//Vector3 viewDirection{}; //W4
+		
 		//Made this operator, not sure if I want to use it...
 		//Vertex operator-(const Vertex& other)
 		//{
@@ -27,16 +33,13 @@ namespace dae
 		//	temp.position = this->position - other.position;
 		//	return temp;
 		//}
-		//Vector2 uv{}; //W3
-		//Vector3 normal{}; //W4
-		//Vector3 tangent{}; //W4
-		//Vector3 viewDirection{}; //W4
 	};
 
 	struct Vertex_Out
 	{
 		Vector4 position{};
 		ColorRGB color{ colors::White };
+		// TODO: Start here. Uncomment the uv part and follow slide 14
 		//Vector2 uv{};
 		//Vector3 normal{};
 		//Vector3 tangent{};
@@ -45,7 +48,7 @@ namespace dae
 
 	enum class PrimitiveTopology
 	{
-		TriangeList,
+		TriangleList,
 		TriangleStrip
 	};
 
