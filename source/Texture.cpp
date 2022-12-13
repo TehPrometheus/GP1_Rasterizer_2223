@@ -43,6 +43,9 @@ namespace dae
 	{
 		//TODO
 		//Sample the correct texel for the given uv
+		const float uvX{ Saturate(uv.x) };
+		const float uvY{ Saturate(uv.y) };
+
 		ColorRGB color{};
 
 		Uint8 r{};
@@ -52,8 +55,8 @@ namespace dae
 		float width { static_cast<float>(m_pSurface->w) };
 		float height{ static_cast<float>(m_pSurface->h) };
 
-		uint32_t px{ static_cast<uint32_t>( width * uv.x) },
-				 py{ static_cast<uint32_t>(height * uv.y) };
+		uint32_t px{ static_cast<uint32_t>( width * uvX) },
+				 py{ static_cast<uint32_t>(height * uvY) };
 
 		SDL_GetRGB(m_pSurfacePixels[px + (py * m_pSurface->w)], m_pSurface->format, &r, &g, &b);
 

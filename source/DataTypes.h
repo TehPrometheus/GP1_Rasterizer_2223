@@ -6,44 +6,41 @@ namespace dae
 {
 	struct Vertex
 	{
-		Vector3 position{};
-		Vertex() {};
-		Vertex(float x, float y, float z, Vector2 uvInput)
-		{
-			position.x = x;
-			position.y = y;
-			position.z = z;
-			uv = uvInput;
-		}
-		Vertex(Vector3 posInput, ColorRGB colorInput)
+		Vertex(Vector3 posInput = Vector3{0,0,0}, Vector2 uvInput = Vector2{0,0}, ColorRGB colorInput = ColorRGB{1,1,1})
 		{
 			position = posInput;
 			color = colorInput;
+			uv = uvInput;
 		}
+		Vector3 position{};
 		ColorRGB color{colors::White};
 		Vector2 uv{}; //W3
-		//Vector3 normal{}; //W4
-		//Vector3 tangent{}; //W4
-		//Vector3 viewDirection{}; //W4
+		Vector3 normal{}; //W4
+		Vector3 tangent{}; //W4
+		Vector3 viewDirection{}; //W4
 		
-		//Made this operator, not sure if I want to use it...
-		//Vertex operator-(const Vertex& other)
-		//{
-		//	Vertex temp;
-		//	temp.position = this->position - other.position;
-		//	return temp;
-		//}
 	};
 
 	struct Vertex_Out
 	{
+		Vertex_Out(	Vector4 posInput = Vector4{ 0,0,0,0 }, 
+					Vector2 uvInput = Vector2{ 0,0 }, 
+					ColorRGB colorInput = ColorRGB{ 1,1,1 },
+					Vector3 normalInput = Vector3{1,0,0},
+					Vector3 tangentInput = Vector3{1,0,0})
+		{
+			position = posInput;
+			color = colorInput;
+			uv = uvInput;
+			normal = normalInput;
+			tangent = tangentInput;
+		}
 		Vector4 position{};
 		ColorRGB color{ colors::White };
-		// TODO: Start here. Uncomment the uv part and follow slide 14
-		//Vector2 uv{};
-		//Vector3 normal{};
-		//Vector3 tangent{};
-		//Vector3 viewDirection{};
+		Vector2 uv{};
+		Vector3 normal{};
+		Vector3 tangent{};
+		Vector3 viewDirection{};
 	};
 
 	enum class PrimitiveTopology
@@ -61,4 +58,15 @@ namespace dae
 		std::vector<Vertex_Out> vertices_out{};
 		Matrix worldMatrix{};
 	};
+
+	struct Light
+	{
+		Vector3 origin{};
+		Vector3 direction{};
+		ColorRGB color{};
+		float intensity{};
+		float shininess{};
+		ColorRGB ambient{};
+	};
+
 }

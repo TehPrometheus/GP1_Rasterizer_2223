@@ -4,7 +4,7 @@
 #include "Math.h"
 #include "DataTypes.h"
 
-#define DISABLE_OBJ
+//#define DISABLE_OBJ
 
 namespace dae
 {
@@ -76,7 +76,7 @@ namespace dae
 					//add the material index as attibute to the attribute array
 					//
 					// Faces or triangles
-					Vertex vertex{};
+					Vertex vertex{ Vertex() };
 					size_t iPosition, iTexCoord, iNormal;
 
 					uint32_t tempIndices[3];
